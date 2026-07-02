@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureAuth | Login System</title>
+<style>
+  :root {
+    --primary: #3b6ea5;
+    --primary-dark: #2c5483;
+    --accent: #d98e3f;
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #232a33;
+    --muted: #6b7686;
+    --border: #e1e6ee;
+    --success: #2f9e63;
+    --danger: #d64545;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #eef3f9 0%, #f7f5ef 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+  }
+
+  .app-wrap {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  /* ---------- TOP BRAND ---------- */
+  .brand {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .brand-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 10px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.6em;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(59,110,165,0.3);
+  }
+
+  .brand h1 {
+    font-size: 1.5em;
+    color: var(--primary-dark);
+    letter-spacing: 0.3px;
+  }
+
+  .brand p {
+    color: var(--muted);
+    font-size: 0.88em;
+    margin-top: 2px;
+  }
+
+  /* ---------- CARD ---------- */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(30,40,60,0.08);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 16px;
+    background: #fbfcfe;
+    border: none;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .tab-btn.active {
+    color: var(--primary-dark);
+    background: #fff;
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 3px;
+    background: var(--primary);
+  }
+
+  .panel { display: none; padding: 32px 30px 30px; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .field {
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.95em;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    background: #fbfcfe;
+  }
+
+  .field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59,110,165,0.12);
+    background: #fff;
+  }
+
+  .field-error {
+    color: var(--danger);
+    font-size: 0.78em;
+    margin-top: 5px;
+    min-height: 14px;
+  }
+
+  .toggle-pass {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.85em;
+    user-select: none;
+  }
+
+  .strength-bar {
+    height: 5px;
+    border-radius: 4px;
+    background: var(--border);
+    margin-top: 7px;
+    overflow: hidden;
+  }
+
+  .strength-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--danger);
+    transition: width 0.25s, background 0.25s;
+  }
+
+  .strength-label {
+    font-size: 0.75em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 9px;
+    font-size: 0.97em;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 6px;
+  }
+
+  .btn:hover { box-shadow: 0 6px 16px rgba(59,110,165,0.35); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    background: #fff;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+    margin-top: 12px;
+  }
+
+  .btn-secondary:hover { box-shadow: 0 6px 16px rgba(214,69,69,0.18); }
+
+  .options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    font-size: 0.85em;
+  }
+
+  .options-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .options-row a {
+    color: var(--primary);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .options-row a:hover { text-decoration: underline; }
+
+  .alert {
+    padding: 11px 14px;
+    border-radius: 9px;
+    font-size: 0.85em;
+    margin-bottom: 16px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .alert.show { display: flex; }
+  .alert.success { background: #e7f7ee; color: var(--success); border: 1px solid #bfe8d2; }
+  .alert.error { background: #fdeaea; color: var(--danger); border: 1px solid #f5c6c6; }
+
+  .lockout-note {
+    background: #fff6e9;
+    color: #9a6a16;
+    border: 1px solid #f3deb3;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 0.82em;
+    margin-bottom: 16px;
+  }
+
+  .requirements-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    background: #fbfcfe;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.78em;
+  }
+
+  .requirements-list li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 0;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .requirements-list li .req-icon {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65em;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .requirements-list li.met { color: var(--success); }
+  .requirements-list li.met .req-icon {
+    background: var(--success);
+    border-color: var(--success);
+    color: #fff;
+  }
+
+  .captcha-box {
+    background: #fbfcfe;
+    border: 1.5px dashed var(--primary);
+    border-radius: 9px;
+    padding: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .captcha-box .captcha-question {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .captcha-box input {
+    width: 100px;
+    text-align: center;
+    padding: 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.95em;
+  }
+
+  .countdown-ring {
+    font-weight: 700;
+    color: #9a6a16;
+  }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .btn-outline {
+    padding: 11px;
+    border-radius: 9px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    border: 1.5px solid var(--primary);
+    color: var(--primary-dark);
+    transition: all 0.15s;
+  }
+
+  .btn-outline:hover { background: #eef3f9; }
+
+  .btn-outline.danger {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .btn-outline.danger:hover { background: #fdeaea; }
+
+  .activity-section {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .activity-section h4 {
+    font-size: 0.85em;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78em;
+    color: var(--muted);
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item .tag-success { color: var(--success); font-weight: 600; }
+  .activity-item .tag-fail { color: var(--danger); font-weight: 600; }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,30,45,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 380px;
+    padding: 26px 24px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.2);
+    animation: fadeIn 0.25s ease;
+  }
+
+  .modal-box h3 {
+    color: var(--primary-dark);
+    margin-bottom: 16px;
+    font-size: 1.05em;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .modal-actions .btn, .modal-actions .btn-outline { margin-top: 0; }
+
+  .inactivity-banner {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-60px);
+    background: #fff6e9;
+    color: #9a6a16;
+    border: 1px solid #f3deb3;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.82em;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    transition: transform 0.3s;
+    z-index: 90;
+  }
+
+  .inactivity-banner.show { transform: translateX(-50%) translateY(0); }
+
+  /* ---------- DASHBOARD ---------- */
+  .dashboard {
+    display: none;
+  }
+
+  .dashboard.active { display: block; }
+
+  .dash-card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(30,40,60,0.08);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .dash-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    padding: 30px;
+    text-align: center;
+  }
+
+  .avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    font-weight: 700;
+    margin: 0 auto 12px;
+  }
+
+  .dash-header h2 { font-size: 1.3em; }
+  .dash-header p { font-size: 0.85em; opacity: 0.85; margin-top: 4px; }
+
+  .dash-body { padding: 26px 28px; }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9em;
+  }
+
+  .info-row:last-of-type { border-bottom: none; }
+  .info-row .key { color: var(--muted); font-weight: 600; }
+  .info-row .val { color: var(--text); }
+
+  .secured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e7f7ee;
+    color: var(--success);
+    font-size: 0.78em;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 0.78em;
+    color: var(--muted);
+    margin-top: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-wrap">
+
+  <div class="brand">
+    <div class="brand-icon">🔒</div>
+    <h1>SecureAuth</h1>
+    <p>A simple, secure login &amp; registration system</p>
+  </div>
+
+  <!-- AUTH CARD -->
+  <div class="card" id="authCard">
+    <div class="tabs">
+      <button class="tab-btn active" id="loginTabBtn">Login</button>
+      <button class="tab-btn" id="registerTabBtn">Register</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="panel active" id="loginPanel">
+      <div class="alert" id="loginAlert"></div>
+      <div class="lockout-note" id="lockoutNote" style="display:none;"></div>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="field">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter your username" required>
+          <div class="field-error" id="loginUsernameError"></div>
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required>
+          <span class="toggle-pass" data-target="loginPassword">Show</span>
+          <div class="field-error" id="loginPasswordError"></div>
+        </div>
+
+        <div class="options-row">
+          <label><input type="checkbox" id="rememberMe"> Remember me</label>
+          <a id="forgotLink">Forgot password?</a>
+        </div>
+
+        <div class="captcha-box" id="captchaBox" style="display:none;">
+          <div class="captcha-question" id="captchaQuestion">3 + 4 = ?</div>
+          <input type="text" id="captchaAnswer" placeholder="Answer">
+          <div class="field-error" id="captchaError"></div>
+        </div>
+
+        <button type="submit" class="btn">Login Securely</button>
+      </form>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="panel" id="registerPanel">
+      <div class="alert" id="registerAlert"></div>
+
+      <form id="registerForm" autocomplete="off">
+        <div class="field">
+          <label for="regFullname">Full Name</label>
+          <input type="text" id="regFullname" placeholder="Jane Doe" required>
+          <div class="field-error" id="regFullnameError"></div>
+        </div>
+
+        <div class="field">
+          <label for="regUsername">Username</label>
+          <input type="text" id="regUsername" placeholder="Choose a unique username" required>
+          <div class="field-error" id="regUsernameError"></div>
+        </div>
+
+        <div class="field">
+          <label for="regEmail">Email Address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com" required>
+          <div class="field-error" id="regEmailError"></div>
+        </div>
+
+        <div class="field">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" placeholder="Create a strong password" required>
+          <span class="toggle-pass" data-target="regPassword">Show</span>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-label" id="strengthLabel">Password strength</div>
+          <ul class="requirements-list" id="reqList">
+            <li id="reqLength"><span class="req-icon">✓</span> At least 8 characters</li>
+            <li id="reqUpper"><span class="req-icon">✓</span> One uppercase letter</li>
+            <li id="reqNumber"><span class="req-icon">✓</span> One number</li>
+            <li id="reqSpecial"><span class="req-icon">✓</span> One special character</li>
+          </ul>
+          <div class="field-error" id="regPasswordError"></div>
+        </div>
+
+        <div class="field">
+          <label for="regConfirm">Confirm Password</label>
+          <input type="password" id="regConfirm" placeholder="Re-enter your password" required>
+          <span class="toggle-pass" data-target="regConfirm">Show</span>
+          <div class="field-error" id="regConfirmError"></div>
+        </div>
+
+        <button type="submit" class="btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECURED DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <div class="dash-card">
+      <div class="dash-header">
+        <div class="avatar-circle" id="avatarInitial">U</div>
+        <h2 id="dashName">Welcome back!</h2>
+        <p id="dashEmail">user@example.com</p>
+      </div>
+      <div class="dash-body">
+        <span class="secured-badge">🔐 Secured Session Active</span>
+        <div class="info-row"><span class="key">Username</span><span class="val" id="infoUsername">—</span></div>
+        <div class="info-row"><span class="key">Account Created</span><span class="val" id="infoCreated">—</span></div>
+        <div class="info-row"><span class="key">Last Login</span><span class="val" id="infoLastLogin">—</span></div>
+        <div class="info-row"><span class="key">Total Logins</span><span class="val" id="infoLoginCount">—</span></div>
+
+        <div class="action-grid">
+          <button class="btn-outline" id="editProfileBtn">Edit Profile</button>
+          <button class="btn-outline" id="changePasswordBtn">Change Password</button>
+        </div>
+        <button class="btn-outline danger" id="deleteAccountBtn" style="width:100%; margin-top:10px;">Delete Account</button>
+
+        <div class="activity-section">
+          <h4>Recent Login Activity</h4>
+          <div id="activityLog"></div>
+        </div>
+
+        <button class="btn btn-secondary" id="logoutBtn">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">All data is stored locally in your browser. No information leaves this device.</p>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal-box">
+    <h3>Edit Profile</h3>
+    <div class="field">
+      <label for="editFullname">Full Name</label>
+      <input type="text" id="editFullname">
+    </div>
+    <div class="field">
+      <label for="editEmail">Email Address</label>
+      <input type="email" id="editEmail">
+      <div class="field-error" id="editEmailError"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="cancelEditProfile" style="flex:1;">Cancel</button>
+      <button class="btn" id="saveEditProfile" style="flex:1;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="changePasswordModal">
+  <div class="modal-box">
+    <h3>Change Password</h3>
+    <div class="field">
+      <label for="currentPasswordInput">Current Password</label>
+      <input type="password" id="currentPasswordInput">
+      <div class="field-error" id="currentPasswordError"></div>
+    </div>
+    <div class="field">
+      <label for="newPasswordInput">New Password</label>
+      <input type="password" id="newPasswordInput">
+      <div class="field-error" id="newPasswordError"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="cancelChangePassword" style="flex:1;">Cancel</button>
+      <button class="btn" id="saveChangePassword" style="flex:1;">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div class="modal-overlay" id="deleteAccountModal">
+  <div class="modal-box">
+    <h3>Delete Account</h3>
+    <p style="font-size:0.85em; color:var(--muted); margin-bottom:14px;">
+      This action is permanent and will remove your account and all associated data from this browser. Type your username to confirm.
+    </p>
+    <div class="field">
+      <input type="text" id="deleteConfirmInput" placeholder="Type your username">
+      <div class="field-error" id="deleteConfirmError"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="cancelDeleteAccount" style="flex:1;">Cancel</button>
+      <button class="btn-outline danger" id="confirmDeleteAccount" style="flex:1;">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<div class="inactivity-banner" id="inactivityBanner">You'll be logged out soon due to inactivity.</div>
+
+<script>
+  /* ======================================================
+     SecureAuth — Local Authentication System
+     Storage layout in localStorage:
+     - 'secureauth_users'   -> array of user records
+     - 'secureauth_session' -> currently logged-in username
+     Passwords are never stored in plain text; a salted hash
+     is stored instead (client-side demo hashing, not for
+     production-grade security).
+  ====================================================== */
+
+  const USERS_KEY = 'secureauth_users';
+  const SESSION_KEY = 'secureauth_session';
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_MS = 30000; // 30 seconds
+
+  // ---------- Elements ----------
+  const loginTabBtn = document.getElementById('loginTabBtn');
+  const registerTabBtn = document.getElementById('registerTabBtn');
+  const loginPanel = document.getElementById('loginPanel');
+  const registerPanel = document.getElementById('registerPanel');
+  const authCard = document.getElementById('authCard');
+  const dashboard = document.getElementById('dashboard');
+
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginAlert = document.getElementById('loginAlert');
+  const registerAlert = document.getElementById('registerAlert');
+  const lockoutNote = document.getElementById('lockoutNote');
+
+  // ---------- Tab switching ----------
+  loginTabBtn.addEventListener('click', () => switchTab('login'));
+  registerTabBtn.addEventListener('click', () => switchTab('register'));
+
+  function switchTab(target) {
+    const isLogin = target === 'login';
+    loginTabBtn.classList.toggle('active', isLogin);
+    registerTabBtn.classList.toggle('active', !isLogin);
+    loginPanel.classList.toggle('active', isLogin);
+    registerPanel.classList.toggle('active', !isLogin);
+    clearAlerts();
+  }
+
+  function clearAlerts() {
+    loginAlert.className = 'alert';
+    loginAlert.textContent = '';
+    registerAlert.className = 'alert';
+    registerAlert.textContent = '';
+  }
+
+  function showAlert(el, message, type) {
+    el.textContent = message;
+    el.className = 'alert show ' + type;
+  }
+
+  function clearFieldErrors(form) {
+    form.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+  }
+
+  // ---------- Show / hide password ----------
+  document.querySelectorAll('.toggle-pass').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const input = document.getElementById(toggle.dataset.target);
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      toggle.textContent = isPassword ? 'Hide' : 'Show';
+    });
+  });
+
+  // ---------- Simple client-side hash (demo-grade, not cryptographically secure) ----------
+  function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'h_' + Math.abs(hash).toString(36) + '_' + str.length;
+  }
+
+  function hashPassword(password, salt) {
+    return simpleHash(salt + ':' + password + ':' + salt);
+  }
+
+  function generateSalt() {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  // ---------- User storage helpers ----------
+  function getUsers() {
+    try {
+      return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  function findUser(username) {
+    return getUsers().find(u => u.username.toLowerCase() === username.toLowerCase());
+  }
+
+  // ---------- Validation helpers ----------
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function passwordStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score; // 0 - 5
+  }
+
+  // ---------- Password strength meter (live) ----------
+  const regPasswordInput = document.getElementById('regPassword');
+  const strengthFill = document.getElementById('strengthFill');
+  const strengthLabel = document.getElementById('strengthLabel');
+
+  regPasswordInput.addEventListener('input', () => {
+    const pw = regPasswordInput.value;
+    const score = passwordStrength(pw);
+    const pct = (score / 5) * 100;
+    strengthFill.style.width = pct + '%';
+
+    let color, label;
+    if (score <= 1) { color = '#d64545'; label = 'Very weak'; }
+    else if (score === 2) { color = '#e08a2e'; label = 'Weak'; }
+    else if (score === 3) { color = '#d9a534'; label = 'Fair'; }
+    else if (score === 4) { color = '#5a9e3f'; label = 'Strong'; }
+    else { color = '#2f9e63'; label = 'Very strong'; }
+
+    strengthFill.style.background = color;
+    strengthLabel.textContent = pw ? label : 'Password strength';
+
+    toggleRequirement('reqLength', pw.length >= 8);
+    toggleRequirement('reqUpper', /[A-Z]/.test(pw));
+    toggleRequirement('reqNumber', /[0-9]/.test(pw));
+    toggleRequirement('reqSpecial', /[^A-Za-z0-9]/.test(pw));
+  });
+
+  function toggleRequirement(id, met) {
+    document.getElementById(id).classList.toggle('met', met);
+  }
+
+  function allRequirementsMet(pw) {
+    return pw.length >= 8 && /[A-Z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+  }
+
+  // ---------- REGISTER ----------
+  registerForm.addEventListener('submit', e => {
+    e.preventDefault();
+    clearAlerts();
+    clearFieldErrors(registerForm);
+
+    const fullname = document.getElementById('regFullname').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirm = document.getElementById('regConfirm').value;
+
+    let hasError = false;
+
+    if (fullname.length < 2) {
+      document.getElementById('regFullnameError').textContent = 'Please enter your full name.';
+      hasError = true;
+    }
+
+    if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
+      document.getElementById('regUsernameError').textContent = 'Username must be 3+ characters (letters, numbers, underscore only).';
+      hasError = true;
+    } else if (findUser(username)) {
+      document.getElementById('regUsernameError').textContent = 'This username is already taken.';
+      hasError = true;
+    }
+
+    if (!isValidEmail(email)) {
+      document.getElementById('regEmailError').textContent = 'Please enter a valid email address.';
+      hasError = true;
+    }
+
+    if (password.length < 6) {
+      document.getElementById('regPasswordError').textContent = 'Password must be at least 6 characters.';
+      hasError = true;
+    } else if (!allRequirementsMet(password)) {
+      document.getElementById('regPasswordError').textContent = 'Password does not meet all requirements above.';
+      hasError = true;
+    }
+
+    if (confirm !== password) {
+      document.getElementById('regConfirmError').textContent = 'Passwords do not match.';
+      hasError = true;
+    }
+
+    if (hasError) {
+      showAlert(registerAlert, 'Please fix the errors below and try again.', 'error');
+      return;
+    }
+
+    const salt = generateSalt();
+    const newUser = {
+      fullname,
+      username,
+      email,
+      salt,
+      passwordHash: hashPassword(password, salt),
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      loginCount: 0,
+      failedAttempts: 0,
+      lockUntil: null
+    };
+
+    const users = getUsers();
+    users.push(newUser);
+    saveUsers(users);
+
+    showAlert(registerAlert, 'Account created successfully! You can now log in.', 'success');
+    registerForm.reset();
+    strengthFill.style.width = '0%';
+    strengthLabel.textContent = 'Password strength';
+
+    setTimeout(() => {
+      switchTab('login');
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginUsername').focus();
+    }, 900);
+  });
+
+  // ---------- CAPTCHA (shown after repeated failed attempts) ----------
+  let captchaRequired = false;
+  let captchaAnswer = null;
+  const captchaBox = document.getElementById('captchaBox');
+  const captchaQuestion = document.getElementById('captchaQuestion');
+  const captchaAnswerInput = document.getElementById('captchaAnswer');
+
+  function generateCaptcha() {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    captchaAnswer = a + b;
+    captchaQuestion.textContent = `${a} + ${b} = ?`;
+    captchaAnswerInput.value = '';
+  }
+
+  function showCaptcha() {
+    captchaRequired = true;
+    captchaBox.style.display = 'block';
+    generateCaptcha();
+  }
+
+  function hideCaptcha() {
+    captchaRequired = false;
+    captchaBox.style.display = 'none';
+  }
+
+  // ---------- Activity log ----------
+  function logActivity(username, success) {
+    const users = getUsers();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (!user) return;
+    if (!user.activity) user.activity = [];
+    user.activity.unshift({ time: new Date().toISOString(), success });
+    user.activity = user.activity.slice(0, 8);
+    saveUsers(users);
+  }
+
+  function renderActivityLog(username) {
+    const user = findUser(username);
+    const container = document.getElementById('activityLog');
+    if (!user || !user.activity || user.activity.length === 0) {
+      container.innerHTML = '<div class="activity-item">No recent activity recorded yet.</div>';
+      return;
+    }
+    container.innerHTML = user.activity.map(a => `
+      <div class="activity-item">
+        <span>${new Date(a.time).toLocaleString('en-IN')}</span>
+        <span class="${a.success ? 'tag-success' : 'tag-fail'}">${a.success ? 'Success' : 'Failed'}</span>
+      </div>
+    `).join('');
+  }
+
+  // ---------- Lockout countdown ----------
+  let lockoutInterval = null;
+
+  function startLockoutCountdown(user, users) {
+    clearInterval(lockoutInterval);
+    lockoutNote.style.display = 'block';
+
+    lockoutInterval = setInterval(() => {
+      const remaining = user.lockUntil - Date.now();
+      if (remaining <= 0) {
+        clearInterval(lockoutInterval);
+        lockoutNote.style.display = 'none';
+        user.lockUntil = null;
+        user.failedAttempts = 0;
+        saveUsers(users);
+        hideCaptcha();
+        return;
+      }
+      const secs = Math.ceil(remaining / 1000);
+      lockoutNote.innerHTML = `Too many failed attempts. Please try again in <span class="countdown-ring">${secs}s</span>.`;
+    }, 250);
+  }
+
+
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    clearAlerts();
+    clearFieldErrors(loginForm);
+    document.getElementById('captchaError').textContent = '';
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    const users = getUsers();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+    if (!user) {
+      showAlert(loginAlert, 'No account found with that username.', 'error');
+      return;
+    }
+
+    // Lockout check
+    if (user.lockUntil && Date.now() < user.lockUntil) {
+      startLockoutCountdown(user, users);
+      return;
+    } else if (user.lockUntil) {
+      user.lockUntil = null;
+      user.failedAttempts = 0;
+      lockoutNote.style.display = 'none';
+    }
+
+    // Captcha check (required after repeated failed attempts)
+    if (captchaRequired) {
+      const userAnswer = parseInt(captchaAnswerInput.value, 10);
+      if (userAnswer !== captchaAnswer) {
+        document.getElementById('captchaError').textContent = 'Incorrect answer, please try again.';
+        generateCaptcha();
+        return;
+      }
+    }
+
+    const computedHash = hashPassword(password, user.salt);
+
+    if (computedHash !== user.passwordHash) {
+      user.failedAttempts = (user.failedAttempts || 0) + 1;
+      logActivity(user.username, false);
+
+      if (user.failedAttempts >= MAX_ATTEMPTS) {
+        user.lockUntil = Date.now() + LOCKOUT_MS;
+        user.failedAttempts = 0;
+        saveUsers(users);
+        hideCaptcha();
+        startLockoutCountdown(user, users);
+        return;
+      }
+
+      if (user.failedAttempts >= 3) {
+        showCaptcha();
+      }
+
+      saveUsers(users);
+      const remaining = MAX_ATTEMPTS - user.failedAttempts;
+      showAlert(loginAlert, `Incorrect password. ${remaining} attempt(s) remaining before lockout.`, 'error');
+      return;
+    }
+
+    // Successful login
+    user.failedAttempts = 0;
+    user.lockUntil = null;
+    user.lastLogin = new Date().toISOString();
+    user.loginCount = (user.loginCount || 0) + 1;
+    saveUsers(users);
+    logActivity(user.username, true);
+    hideCaptcha();
+
+    const remember = document.getElementById('rememberMe').checked;
+    if (remember) {
+      localStorage.setItem(SESSION_KEY, user.username);
+    } else {
+      sessionStorage.setItem(SESSION_KEY, user.username);
+    }
+
+    showAlert(loginAlert, 'Login successful! Redirecting...', 'success');
+    setTimeout(() => enterDashboard(user.username), 600);
+  });
+
+  // ---------- Forgot password (demo) ----------
+  document.getElementById('forgotLink').addEventListener('click', () => {
+    const username = document.getElementById('loginUsername').value.trim();
+    const user = findUser(username);
+    clearAlerts();
+    if (!user) {
+      showAlert(loginAlert, 'Enter your username above first, then click "Forgot password?" again.', 'error');
+      return;
+    }
+    const newPassword = prompt(`Demo password reset for "${user.username}".\nEnter a new password (6+ characters):`);
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+      showAlert(loginAlert, 'New password must be at least 6 characters. Reset cancelled.', 'error');
+      return;
+    }
+    const users = getUsers();
+    const target = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    const salt = generateSalt();
+    target.salt = salt;
+    target.passwordHash = hashPassword(newPassword, salt);
+    target.failedAttempts = 0;
+    target.lockUntil = null;
+    saveUsers(users);
+    showAlert(loginAlert, 'Password reset successful. Please log in with your new password.', 'success');
+  });
+
+  // ---------- Dashboard (secured page) ----------
+  function enterDashboard(username) {
+    const user = findUser(username);
+    if (!user) return;
+
+    authCard.style.display = 'none';
+    dashboard.classList.add('active');
+
+    document.getElementById('avatarInitial').textContent = user.fullname.charAt(0).toUpperCase();
+    document.getElementById('dashName').textContent = 'Welcome, ' + user.fullname + '!';
+    document.getElementById('dashEmail').textContent = user.email;
+    document.getElementById('infoUsername').textContent = user.username;
+    document.getElementById('infoCreated').textContent = new Date(user.createdAt).toLocaleString('en-IN');
+    document.getElementById('infoLastLogin').textContent = user.lastLogin ? new Date(user.lastLogin).toLocaleString('en-IN') : 'First login';
+    document.getElementById('infoLoginCount').textContent = user.loginCount;
+    renderActivityLog(username);
+    resetInactivityTimer();
+  }
+
+  function currentSessionUsername() {
+    return localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+  }
+
+  // ---------- Edit Profile ----------
+  const editProfileModal = document.getElementById('editProfileModal');
+  document.getElementById('editProfileBtn').addEventListener('click', () => {
+    const user = findUser(currentSessionUsername());
+    if (!user) return;
+    document.getElementById('editFullname').value = user.fullname;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editEmailError').textContent = '';
+    editProfileModal.classList.add('show');
+  });
+  document.getElementById('cancelEditProfile').addEventListener('click', () => editProfileModal.classList.remove('show'));
+  document.getElementById('saveEditProfile').addEventListener('click', () => {
+    const newName = document.getElementById('editFullname').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+    if (newName.length < 2) {
+      document.getElementById('editEmailError').textContent = 'Please enter a valid full name.';
+      return;
+    }
+    if (!isValidEmail(newEmail)) {
+      document.getElementById('editEmailError').textContent = 'Please enter a valid email address.';
+      return;
+    }
+    const users = getUsers();
+    const user = users.find(u => u.username === currentSessionUsername());
+    user.fullname = newName;
+    user.email = newEmail;
+    saveUsers(users);
+    editProfileModal.classList.remove('show');
+    enterDashboard(user.username);
+  });
+
+  // ---------- Change Password ----------
+  const changePasswordModal = document.getElementById('changePasswordModal');
+  document.getElementById('changePasswordBtn').addEventListener('click', () => {
+    document.getElementById('currentPasswordInput').value = '';
+    document.getElementById('newPasswordInput').value = '';
+    document.getElementById('currentPasswordError').textContent = '';
+    document.getElementById('newPasswordError').textContent = '';
+    changePasswordModal.classList.add('show');
+  });
+  document.getElementById('cancelChangePassword').addEventListener('click', () => changePasswordModal.classList.remove('show'));
+  document.getElementById('saveChangePassword').addEventListener('click', () => {
+    const users = getUsers();
+    const user = users.find(u => u.username === currentSessionUsername());
+    const currentPw = document.getElementById('currentPasswordInput').value;
+    const newPw = document.getElementById('newPasswordInput').value;
+
+    if (hashPassword(currentPw, user.salt) !== user.passwordHash) {
+      document.getElementById('currentPasswordError').textContent = 'Current password is incorrect.';
+      return;
+    }
+    if (!allRequirementsMet(newPw)) {
+      document.getElementById('newPasswordError').textContent = 'New password does not meet security requirements.';
+      return;
+    }
+    const newSalt = generateSalt();
+    user.salt = newSalt;
+    user.passwordHash = hashPassword(newPw, newSalt);
+    saveUsers(users);
+    changePasswordModal.classList.remove('show');
+    alert('Password updated successfully.');
+  });
+
+  // ---------- Delete Account ----------
+  const deleteAccountModal = document.getElementById('deleteAccountModal');
+  document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('deleteConfirmError').textContent = '';
+    deleteAccountModal.classList.add('show');
+  });
+  document.getElementById('cancelDeleteAccount').addEventListener('click', () => deleteAccountModal.classList.remove('show'));
+  document.getElementById('confirmDeleteAccount').addEventListener('click', () => {
+    const username = currentSessionUsername();
+    const typed = document.getElementById('deleteConfirmInput').value.trim();
+    if (typed !== username) {
+      document.getElementById('deleteConfirmError').textContent = 'Username does not match. Account not deleted.';
+      return;
+    }
+    let users = getUsers();
+    users = users.filter(u => u.username !== username);
+    saveUsers(users);
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    deleteAccountModal.classList.remove('show');
+    dashboard.classList.remove('active');
+    authCard.style.display = 'block';
+    switchTab('login');
+    showAlert(loginAlert, 'Account deleted successfully.', 'success');
+  });
+
+  // ---------- Inactivity auto-logout ----------
+  const INACTIVITY_WARNING_MS = 4 * 60 * 1000; // 4 minutes
+  const INACTIVITY_LOGOUT_MS = 5 * 60 * 1000;  // 5 minutes
+  const inactivityBanner = document.getElementById('inactivityBanner');
+  let inactivityWarnTimer = null;
+  let inactivityLogoutTimer = null;
+
+  function resetInactivityTimer() {
+    clearTimeout(inactivityWarnTimer);
+    clearTimeout(inactivityLogoutTimer);
+    inactivityBanner.classList.remove('show');
+    if (!dashboard.classList.contains('active')) return;
+
+    inactivityWarnTimer = setTimeout(() => {
+      inactivityBanner.classList.add('show');
+    }, INACTIVITY_WARNING_MS);
+
+    inactivityLogoutTimer = setTimeout(() => {
+      performLogout();
+    }, INACTIVITY_LOGOUT_MS);
+  }
+
+  ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      if (dashboard.classList.contains('active')) resetInactivityTimer();
+    });
+  });
+
+  function performLogout() {
+    clearTimeout(inactivityWarnTimer);
+    clearTimeout(inactivityLogoutTimer);
+    inactivityBanner.classList.remove('show');
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    dashboard.classList.remove('active');
+    authCard.style.display = 'block';
+    loginForm.reset();
+    clearAlerts();
+    switchTab('login');
+  }
+
+
+
+  document.getElementById('logoutBtn').addEventListener('click', performLogout);
+  (function checkSession() {
+    const sessionUser = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+    if (sessionUser && findUser(sessionUser)) {
+      enterDashboard(sessionUser);
+    }
+  })();
+</script>
+
+</body>
+</html>
